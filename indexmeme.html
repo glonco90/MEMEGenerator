@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemeForge — Meme Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Impact&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0;
+  --white: #ffffff;
+  --black: #111111;
+  --gray-100: #f0efeb;
+  --gray-200: #e2e1dc;
+  --gray-400: #9e9d97;
+  --gray-600: #5a5955;
+  --accent: #ff3b00;
+  --accent-light: #fff1ee;
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--black);
+  min-height: 100vh;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-600);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+}
+.back-btn:hover { background: var(--gray-100); color: var(--black); }
+.back-btn svg { width: 16px; height: 16px; }
+
+.logo {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--accent); }
+
+.nav-right {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.canvas-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.canvas-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.canvas-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.canvas-area {
+  position: relative;
+  background: var(--gray-100);
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  display: block;
+  max-width: 100%;
+  border-radius: 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--gray-400);
+  padding: 3rem;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--gray-200);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.empty-state p { font-size: 14px; }
+.empty-state small { font-size: 12px; color: var(--gray-400); }
+
+.upload-trigger {
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+.upload-trigger:hover { background: #333; transform: translateY(-1px); }
+
+.canvas-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-600);
+}
+.btn-outline:hover { border-color: var(--gray-400); color: var(--black); background: var(--gray-100); }
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--white);
+  flex: 1;
+  justify-content: center;
+}
+.btn-primary:hover { background: #e03400; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,59,0,0.3); }
+
+.sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 12px; }
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+
+textarea, input[type="text"] {
+  width: 100%;
+  background: var(--gray-100);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--black);
+  resize: none;
+  transition: all 0.15s;
+  outline: none;
+}
+textarea:focus, input[type="text"]:focus {
+  border-color: var(--black);
+  background: var(--white);
+}
+
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1; }
+
+input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--gray-200);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin-top: 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  background: var(--black);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.color-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.color-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+}
+.color-dot:hover { transform: scale(1.1); }
+.color-dot.active { border-color: var(--black); }
+
+input[type="color"] {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-200);
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+select {
+  width: 100%;
+  background: var(--gray-100);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--black);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+select:focus { border-color: var(--black); background: var(--white); }
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.template-btn {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 8px 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  line-height: 1.3;
+}
+.template-btn:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+
+.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row input { flex: 1; }
+.slider-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gray-400);
+  min-width: 28px;
+  text-align: right;
+}
+
+.hidden { display: none; }
+
+.drag-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,59,0,0.06);
+  border: 2px dashed var(--accent);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  z-index: 10;
+}
+.drag-overlay.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="back-btn">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M10 12L6 8l4-4"/>
+    </svg>
+    Späť na portál
+  </a>
+  <div class="logo">Meme<span>Forge</span></div>
+  <div class="nav-right">v1.0 · client-side</div>
+</nav>
+
+<div class="app">
+  <!-- Canvas -->
+  <div class="canvas-card">
+    <div class="canvas-header">
+      <span class="canvas-title">PREVIEW</span>
+      <span style="font-size:12px;color:var(--gray-400)" id="dimensions">—</span>
+    </div>
+    <div class="canvas-area" id="canvasArea">
+      <div class="drag-overlay" id="dragOverlay">Pusti obrázok sem</div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🖼️</div>
+        <p>Nahraj obrázok alebo vyber šablónu</p>
+        <small>Podporované: JPG, PNG, GIF, WebP</small>
+        <button class="upload-trigger" onclick="document.getElementById('fileInput').click()">Vybrať obrázok</button>
+      </div>
+      <canvas id="memeCanvas" class="hidden"></canvas>
+    </div>
+    <div class="canvas-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v9M4 7l4-4 4 4"/><path d="M2 13h12"/></svg>
+        Nový obrázok
+      </button>
+      <button class="btn btn-outline" onclick="resetCanvas()">Resetovať</button>
+      <button class="btn btn-primary" onclick="downloadMeme()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v9M4 11l4 4 4-4"/><path d="M2 13h12"/></svg>
+        Stiahnuť meme
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <!-- Templates -->
+    <div class="card">
+      <div class="card-header">Šablóny</div>
+      <div class="card-body">
+        <div class="templates-grid">
+          <button class="template-btn" onclick="loadTemplate('drake')">Drake</button>
+          <button class="template-btn" onclick="loadTemplate('distracted')">Distracted BF</button>
+          <button class="template-btn" onclick="loadTemplate('buttons')">Two Buttons</button>
+          <button class="template-btn" onclick="loadTemplate('expanding')">Expanding Brain</button>
+          <button class="template-btn" onclick="loadTemplate('change')">Change My Mind</button>
+          <button class="template-btn" onclick="loadTemplate('disaster')">This is Fine</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Text -->
+    <div class="card">
+      <div class="card-header">Horný text</div>
+      <div class="card-body">
+        <textarea id="topText" rows="2" placeholder="Horný text memu..." oninput="redraw()"></textarea>
+        <div class="row">
+          <div>
+            <label>Veľkosť</label>
+            <div class="slider-row">
+              <input type="range" id="topSize" min="16" max="120" value="48" step="1" oninput="updateVal('topSize','topSizeVal');redraw()">
+              <span class="slider-val" id="topSizeVal">48</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Farba textu</label>
+          <div class="color-row">
+            <div class="color-dot active" style="background:#ffffff" data-color="#ffffff" onclick="setTextColor('top','#ffffff',this)"></div>
+            <div class="color-dot" style="background:#111111" data-color="#111111" onclick="setTextColor('top','#111111',this)"></div>
+            <div class="color-dot" style="background:#ff3b00" data-color="#ff3b00" onclick="setTextColor('top','#ff3b00',this)"></div>
+            <div class="color-dot" style="background:#ffd60a" data-color="#ffd60a" onclick="setTextColor('top','#ffd60a',this)"></div>
+            <div class="color-dot" style="background:#34c759" data-color="#34c759" onclick="setTextColor('top','#34c759',this)"></div>
+            <input type="color" id="topColorCustom" value="#ffffff" oninput="setTextColor('top',this.value,null)" title="Vlastná farba">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Text -->
+    <div class="card">
+      <div class="card-header">Dolný text</div>
+      <div class="card-body">
+        <textarea id="bottomText" rows="2" placeholder="Dolný text memu..." oninput="redraw()"></textarea>
+        <div>
+          <label>Veľkosť</label>
+          <div class="slider-row">
+            <input type="range" id="bottomSize" min="16" max="120" value="48" step="1" oninput="updateVal('bottomSize','bottomSizeVal');redraw()">
+            <span class="slider-val" id="bottomSizeVal">48</span>
+          </div>
+        </div>
+        <div>
+          <label>Farba textu</label>
+          <div class="color-row">
+            <div class="color-dot active" style="background:#ffffff" data-color="#ffffff" onclick="setTextColor('bottom','#ffffff',this)"></div>
+            <div class="color-dot" style="background:#111111" data-color="#111111" onclick="setTextColor('bottom','#111111',this)"></div>
+            <div class="color-dot" style="background:#ff3b00" data-color="#ff3b00" onclick="setTextColor('bottom','#ff3b00',this)"></div>
+            <div class="color-dot" style="background:#ffd60a" data-color="#ffd60a" onclick="setTextColor('bottom','#ffd60a',this)"></div>
+            <div class="color-dot" style="background:#34c759" data-color="#34c759" onclick="setTextColor('bottom','#34c759',this)"></div>
+            <input type="color" id="bottomColorCustom" value="#ffffff" oninput="setTextColor('bottom',this.value,null)" title="Vlastná farba">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Style -->
+    <div class="card">
+      <div class="card-header">Štýl textu</div>
+      <div class="card-body">
+        <div>
+          <label>Font</label>
+          <select id="fontStyle" onchange="redraw()">
+            <option value="Impact">Impact (klasický meme)</option>
+            <option value="'DM Sans'">DM Sans (moderný)</option>
+            <option value="Arial Black">Arial Black</option>
+            <option value="Comic Sans MS">Comic Sans</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+        <div>
+          <label>Obrys textu</label>
+          <div class="slider-row">
+            <input type="range" id="strokeWidth" min="0" max="12" value="3" step="1" oninput="updateVal('strokeWidth','strokeVal');redraw()">
+            <span class="slider-val" id="strokeVal">3</span>
+          </div>
+        </div>
+        <div>
+          <label>Pozícia horného textu</label>
+          <div class="slider-row">
+            <input type="range" id="topPos" min="0" max="100" value="8" step="1" oninput="updateVal('topPos','topPosVal');redraw()">
+            <span class="slider-val" id="topPosVal">8</span>
+          </div>
+        </div>
+        <div>
+          <label>Pozícia dolného textu</label>
+          <div class="slider-row">
+            <input type="range" id="bottomPos" min="0" max="100" value="92" step="1" oninput="updateVal('bottomPos','bottomPosVal');redraw()">
+            <span class="slider-val" id="bottomPosVal">92</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" class="hidden">
+
+<script>
+const canvas = document.getElementById('memeCanvas');
+const ctx = canvas.getContext('2d');
+let img = null;
+let topColor = '#ffffff';
+let bottomColor = '#ffffff';
+
+function updateVal(sliderId, valId) {
+  document.getElementById(valId).textContent = document.getElementById(sliderId).value;
+}
+
+function setTextColor(which, color, el) {
+  if (which === 'top') {
+    topColor = color;
+    document.querySelectorAll('#topText ~ * .color-dot, .card:nth-child(2) .color-dot').forEach(d => d.classList.remove('active'));
+  } else {
+    bottomColor = color;
+  }
+  if (el) el.classList.add('active');
+  redraw();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  const lines = [];
+  for (let w of words) {
+    const test = line + (line ? ' ' : '') + w;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = w;
+    } else { line = test; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawText(text, yPercent, color, size, isBottom) {
+  if (!text.trim()) return;
+  const font = document.getElementById('fontStyle').value;
+  const stroke = parseInt(document.getElementById('strokeWidth').value);
+  ctx.font = `900 ${size}px ${font}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const maxWidth = canvas.width * 0.9;
+  const lineHeight = size * 1.15;
+  const lines = wrapText(ctx, text.toUpperCase(), canvas.width/2, 0, maxWidth, lineHeight);
+  let startY = (yPercent / 100) * canvas.height;
+  if (isBottom) startY = startY - (lines.length - 1) * lineHeight / 2;
+  else startY = startY + (lines.length - 1) * lineHeight / 2;
+
+  lines.forEach((line, i) => {
+    const y = isBottom ? startY - (lines.length - 1 - i) * lineHeight : startY - (lines.length - 1 - i) * lineHeight;
+    if (stroke > 0) {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = stroke * 2;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(line, canvas.width / 2, y);
+    }
+    ctx.fillStyle = color;
+    ctx.fillText(line, canvas.width / 2, y);
+  });
+}
+
+function redraw() {
+  if (!img) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const topText = document.getElementById('topText').value;
+  const bottomText = document.getElementById('bottomText').value;
+  const topSize = parseInt(document.getElementById('topSize').value);
+  const bottomSize = parseInt(document.getElementById('bottomSize').value);
+  const topPos = parseInt(document.getElementById('topPos').value);
+  const bottomPos = parseInt(document.getElementById('bottomPos').value);
+  drawText(topText, topPos, topColor, topSize, false);
+  drawText(bottomText, bottomPos, bottomColor, bottomSize, true);
+}
+
+function showCanvas(image) {
+  img = image;
+  const maxW = document.getElementById('canvasArea').clientWidth;
+  const scale = Math.min(1, maxW / img.width);
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  document.getElementById('emptyState').classList.add('hidden');
+  canvas.classList.remove('hidden');
+  document.getElementById('dimensions').textContent = `${img.naturalWidth || img.width} × ${img.naturalHeight || img.height}`;
+  redraw();
+}
+
+function loadFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const image = new Image();
+    image.onload = () => showCanvas(image);
+    image.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) loadFromFile(e.target.files[0]);
+});
+
+// Drag & drop
+const area = document.getElementById('canvasArea');
+const overlay = document.getElementById('dragOverlay');
+area.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.add('visible'); });
+area.addEventListener('dragleave', () => overlay.classList.remove('visible'));
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  overlay.classList.remove('visible');
+  if (e.dataTransfer.files[0]) loadFromFile(e.dataTransfer.files[0]);
+});
+
+// Templates — generate colored placeholder canvases
+const templates = {
+  drake: { colors: ['#c8a96e','#8b9db5'], labels: ['No:', 'Yes:'], topText: '', bottomText: '' },
+  distracted: { colors: ['#e8c4a0','#7ab5e8'], labels: ['Distracted BF'], topText: 'Keď vidíš niečo nové', bottomText: 'Tvoja ex' },
+  buttons: { colors: ['#f5e6d3','#d4e6f5'], labels: ['Two Buttons'], topText: 'STLAČ TLAČIDLO', bottomText: 'ALE KTORÉ???' },
+  expanding: { colors: ['#1a1a2e','#16213e'], labels: ['Big Brain'], topText: 'MALÝ NÁPAD', bottomText: 'VEĽKÝ MOZOG' },
+  change: { colors: ['#deb887','#87ceeb'], labels: ['Change My Mind'], topText: 'Meme generator', bottomText: 'lepší ako Photoshop' },
+  disaster: { colors: ['#ff6b35','#f7c59f'], labels: ['This is Fine'], topText: 'JA KEĎ', bottomText: 'VŠETKO HORÍ' },
+};
+
+function loadTemplate(name) {
+  const t = templates[name];
+  const offscreen = document.createElement('canvas');
+  offscreen.width = 600; offscreen.height = 400;
+  const c = offscreen.getContext('2d');
+  const grad = c.createLinearGradient(0,0,600,400);
+  grad.addColorStop(0, t.colors[0]);
+  grad.addColorStop(1, t.colors[1] || t.colors[0]);
+  c.fillStyle = grad;
+  c.fillRect(0,0,600,400);
+  c.fillStyle = 'rgba(0,0,0,0.15)';
+  c.font = 'bold 18px DM Sans';
+  c.textAlign = 'center';
+  c.fillText(`[ ${name.toUpperCase()} TEMPLATE ]`, 300, 200);
+
+  const image = new Image();
+  image.onload = () => {
+    showCanvas(image);
+    document.getElementById('topText').value = t.topText;
+    document.getElementById('bottomText').value = t.bottomText;
+    redraw();
+  };
+  image.src = offscreen.toDataURL();
+}
+
+function resetCanvas() {
+  document.getElementById('topText').value = '';
+  document.getElementById('bottomText').value = '';
+  document.getElementById('topSize').value = 48;
+  document.getElementById('bottomSize').value = 48;
+  document.getElementById('strokeWidth').value = 3;
+  document.getElementById('topPos').value = 8;
+  document.getElementById('bottomPos').value = 92;
+  ['topSizeVal','bottomSizeVal','strokeVal','topPosVal','bottomPosVal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (id === 'topPosVal') el.textContent = 8;
+    else if (id === 'bottomPosVal') el.textContent = 92;
+    else if (id === 'strokeVal') el.textContent = 3;
+    else el.textContent = 48;
+  });
+  topColor = '#ffffff'; bottomColor = '#ffffff';
+  redraw();
+}
+
+function downloadMeme() {
+  if (!img) return;
+  const full = document.createElement('canvas');
+  full.width = img.naturalWidth || img.width;
+  full.height = img.naturalHeight || img.height;
+  const fc = full.getContext('2d');
+  fc.drawImage(img, 0, 0, full.width, full.height);
+
+  const font = document.getElementById('fontStyle').value;
+  const stroke = parseInt(document.getElementById('strokeWidth').value);
+  const topText = document.getElementById('topText').value;
+  const bottomText = document.getElementById('bottomText').value;
+  const topSize = parseInt(document.getElementById('topSize').value) * (full.width / canvas.width);
+  const bottomSize = parseInt(document.getElementById('bottomSize').value) * (full.width / canvas.width);
+  const topPos = parseInt(document.getElementById('topPos').value);
+  const bottomPos = parseInt(document.getElementById('bottomPos').value);
+
+  function drawFull(text, yPercent, color, size, isBottom) {
+    if (!text.trim()) return;
+    fc.font = `900 ${size}px ${font}`;
+    fc.textAlign = 'center';
+    fc.textBaseline = 'middle';
+    const maxWidth = full.width * 0.9;
+    const lineHeight = size * 1.15;
+    const words = text.split(' ');
+    let line = '', lines = [];
+    for (let w of words) {
+      const test = line + (line ? ' ' : '') + w;
+      if (fc.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+    let startY = (yPercent / 100) * full.height;
+    lines.forEach((l, i) => {
+      const y = isBottom ? startY - (lines.length - 1 - i) * lineHeight : startY - (lines.length - 1 - i) * lineHeight;
+      if (stroke > 0) { fc.strokeStyle = '#000'; fc.lineWidth = stroke * 2 * (full.width/canvas.width); fc.lineJoin = 'round'; fc.strokeText(l.toUpperCase(), full.width/2, y); }
+      fc.fillStyle = color; fc.fillText(l.toUpperCase(), full.width/2, y);
+    });
+  }
+
+  drawFull(topText, topPos, topColor, topSize, false);
+  drawFull(bottomText, bottomPos, bottomColor, bottomSize, true);
+
+  const link = document.createElement('a');
+  link.download = 'meme.png';
+  link.href = full.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>

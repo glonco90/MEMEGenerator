@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MemeForge — Meme Generator</title>
+<title>MemeForge — Image & Video Editor</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Impact&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,722 +18,1205 @@
   --gray-400: #9e9d97;
   --gray-600: #5a5955;
   --accent: #ff3b00;
+  --accent2: #007aff;
   --accent-light: #fff1ee;
   --radius: 16px;
   --radius-sm: 8px;
   --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
 }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--black);
-  min-height: 100vh;
-}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--black); min-height: 100vh; }
 
 nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  height: 60px;
-  background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 60px;
+  background: var(--white); border-bottom: 1px solid var(--gray-200);
+  position: sticky; top: 0; z-index: 100;
 }
-
 .back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--gray-600);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+  color: var(--gray-600); text-decoration: none; font-size: 14px; font-weight: 500;
+  padding: 6px 12px; border-radius: var(--radius-sm); transition: all 0.15s;
 }
 .back-btn:hover { background: var(--gray-100); color: var(--black); }
-.back-btn svg { width: 16px; height: 16px; }
-
-.logo {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: -0.5px;
-}
+.logo { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
 .logo span { color: var(--accent); }
+.nav-right { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gray-400); }
 
-.nav-right {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: var(--gray-400);
+/* Tabs */
+.tabs { display: flex; gap: 0; padding: 1.5rem 2rem 0; max-width: 1200px; margin: 0 auto; }
+.tab-btn {
+  padding: 10px 24px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  border: none; background: transparent; cursor: pointer; color: var(--gray-600);
+  border-bottom: 2px solid transparent; transition: all 0.15s;
 }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover:not(.active) { color: var(--black); }
 
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Layout */
 .app {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 1.5rem;
-  align-items: start;
+  max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 2rem;
+  display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start;
 }
 
-.canvas-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
+/* Canvas card */
+.canvas-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .canvas-header {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--gray-100);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; justify-content: space-between;
 }
-
-.canvas-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gray-600);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.5px;
-}
-
+.canvas-title { font-size: 12px; font-weight: 500; color: var(--gray-600); font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
 .canvas-area {
-  position: relative;
-  background: var(--gray-100);
-  min-height: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative; background: #111; min-height: 420px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
+canvas { display: block; max-width: 100%; }
+video#videoEl { display: none; }
 
-canvas {
-  display: block;
-  max-width: 100%;
-  border-radius: 0;
+.drop-zone {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  color: var(--gray-400); padding: 3rem; text-align: center; cursor: pointer;
+  border: 1.5px dashed rgba(255,255,255,0.15); min-width: 360px; min-height: 280px;
+  justify-content: center; transition: all 0.2s; border-radius: 12px;
 }
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: var(--gray-400);
-  padding: 3rem;
-  text-align: center;
+.drop-zone:hover { border-color: rgba(255,59,0,0.5); color: #fff; }
+.drop-icon { font-size: 40px; opacity: 0.4; }
+.upload-btn {
+  background: var(--accent); color: #fff; border: none; padding: 10px 22px;
+  border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
 }
+.upload-btn:hover { background: #e03400; }
 
-.empty-icon {
-  width: 56px;
-  height: 56px;
-  background: var(--gray-200);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
+.canvas-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--gray-100); display: flex; gap: 8px; flex-wrap: wrap; }
 
-.empty-state p { font-size: 14px; }
-.empty-state small { font-size: 12px; color: var(--gray-400); }
+/* Sticker canvas overlay */
+#stickerLayer { position: absolute; top: 0; left: 0; pointer-events: none; }
 
-.upload-trigger {
-  background: var(--black);
-  color: var(--white);
-  border: none;
-  padding: 10px 20px;
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-top: 4px;
-}
-.upload-trigger:hover { background: #333; transform: translateY(-1px); }
-
-.canvas-footer {
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--gray-100);
-  display: flex;
-  gap: 8px;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  border: none;
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--gray-200);
-  color: var(--gray-600);
-}
-.btn-outline:hover { border-color: var(--gray-400); color: var(--black); background: var(--gray-100); }
-
-.btn-primary {
-  background: var(--accent);
-  color: var(--white);
-  flex: 1;
-  justify-content: center;
-}
-.btn-primary:hover { background: #e03400; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,59,0,0.3); }
-
+/* Sidebar */
 .sidebar { display: flex; flex-direction: column; gap: 1rem; }
-
-.card {
-  background: var(--white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .card-header {
-  padding: 1rem 1.25rem 0.75rem;
-  border-bottom: 1px solid var(--gray-100);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gray-600);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--gray-100);
+  font-size: 11px; font-weight: 600; color: var(--gray-600);
+  text-transform: uppercase; letter-spacing: 0.5px;
 }
+.card-body { padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
 
-.card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 12px; }
-
-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gray-600);
-  margin-bottom: 4px;
-}
-
+label { display: block; font-size: 12px; font-weight: 500; color: var(--gray-600); margin-bottom: 3px; }
 textarea, input[type="text"] {
-  width: 100%;
-  background: var(--gray-100);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: var(--black);
-  resize: none;
-  transition: all 0.15s;
-  outline: none;
+  width: 100%; background: var(--gray-100); border: 1px solid transparent;
+  border-radius: var(--radius-sm); padding: 9px 11px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--black);
+  resize: none; transition: all 0.15s; outline: none;
 }
-textarea:focus, input[type="text"]:focus {
-  border-color: var(--black);
-  background: var(--white);
-}
-
-.row { display: flex; gap: 8px; }
-.row > * { flex: 1; }
+textarea:focus, input[type="text"]:focus { border-color: var(--black); background: var(--white); }
 
 input[type="range"] {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 4px;
-  background: var(--gray-200);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  margin-top: 4px;
+  width: 100%; -webkit-appearance: none; height: 3px;
+  background: var(--gray-200); border-radius: 2px; outline: none; cursor: pointer; margin-top: 4px;
 }
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  background: var(--black);
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.color-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.color-dot {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.15s;
-  position: relative;
-}
-.color-dot:hover { transform: scale(1.1); }
-.color-dot.active { border-color: var(--black); }
-
-input[type="color"] {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 2px solid var(--gray-200);
-  padding: 0;
-  cursor: pointer;
-  background: none;
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--black); border-radius: 50%; cursor: pointer;
 }
 
 select {
-  width: 100%;
-  background: var(--gray-100);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: var(--black);
-  outline: none;
-  cursor: pointer;
-  transition: all 0.15s;
+  width: 100%; background: var(--gray-100); border: 1px solid transparent;
+  border-radius: var(--radius-sm); padding: 9px 11px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--black);
+  outline: none; cursor: pointer; transition: all 0.15s;
 }
 select:focus { border-color: var(--black); background: var(--white); }
 
-.templates-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; border: none;
 }
+.btn-outline { background: transparent; border: 1px solid var(--gray-200); color: var(--gray-600); }
+.btn-outline:hover { border-color: var(--gray-400); color: var(--black); background: var(--gray-100); }
+.btn-primary { background: var(--accent); color: #fff; flex: 1; }
+.btn-primary:hover { background: #e03400; }
+.btn-blue { background: var(--accent2); color: #fff; }
+.btn-blue:hover { background: #0066dd; }
+.btn-green { background: #34c759; color: #fff; }
+.btn-green:hover { background: #28a745; }
 
-.template-btn {
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  padding: 8px 6px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--gray-600);
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: center;
-  line-height: 1.3;
+.color-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.color-dot {
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0;
 }
-.template-btn:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+.color-dot:hover { transform: scale(1.1); }
+.color-dot.active { border-color: var(--black); }
+input[type="color"] {
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--gray-200);
+  padding: 0; cursor: pointer; background: none; flex-shrink: 0;
+}
 
 .slider-row { display: flex; align-items: center; gap: 8px; }
 .slider-row input { flex: 1; }
-.slider-val {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--gray-400);
-  min-width: 28px;
-  text-align: right;
+.slider-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray-400); min-width: 30px; text-align: right; }
+
+/* Filter presets */
+.presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.preset-btn {
+  background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 7px 4px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  color: var(--gray-600); cursor: pointer; transition: all 0.15s; text-align: center;
 }
+.preset-btn:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+.preset-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+/* Stickers */
+.sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.sticker-btn {
+  background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 8px 4px; font-size: 20px; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.sticker-btn:hover { background: var(--white); border-color: var(--gray-400); transform: scale(1.1); }
+
+/* Video controls */
+.video-controls {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: rgba(0,0,0,0.8); position: absolute; bottom: 0; left: 0; right: 0;
+}
+.vc-btn {
+  background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 14px;
+  padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+.vc-btn:hover { background: rgba(255,255,255,0.3); }
+#videoProgress { flex: 1; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
+#videoProgress::-webkit-slider-thumb { width: 12px; height: 12px; background: #fff; }
+.vc-time { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7); }
+
+/* GIF progress */
+.gif-progress { padding: 8px 12px; background: var(--gray-100); border-radius: var(--radius-sm); display: none; }
+.gif-bar { height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.gif-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s; border-radius: 2px; }
+.gif-label { font-size: 12px; color: var(--gray-600); }
 
 .hidden { display: none; }
-
-.drag-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,59,0,0.06);
-  border: 2px dashed var(--accent);
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--accent);
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-  z-index: 10;
-}
-.drag-overlay.visible { opacity: 1; }
+.row { display: flex; gap: 6px; }
+.row > * { flex: 1; }
 </style>
 </head>
 <body>
-
 <nav>
-  <a href="/" class="back-btn">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-      <path d="M10 12L6 8l4-4"/>
-    </svg>
-    Späť na portál
-  </a>
+  <a href="/" class="back-btn">← Späť na portál</a>
   <div class="logo">Meme<span>Forge</span></div>
-  <div class="nav-right">v1.0 · client-side</div>
+  <div class="nav-right">image + video</div>
 </nav>
 
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('image')">🖼 Obrázok</button>
+  <button class="tab-btn" onclick="switchTab('video')">🎬 Video / GIF</button>
+</div>
+
+<!-- ===================== IMAGE TAB ===================== -->
+<div id="tab-image" class="tab-content active">
 <div class="app">
-  <!-- Canvas -->
   <div class="canvas-card">
     <div class="canvas-header">
       <span class="canvas-title">PREVIEW</span>
-      <span style="font-size:12px;color:var(--gray-400)" id="dimensions">—</span>
+      <span id="imgDimensions" style="font-size:12px;color:var(--gray-400)">—</span>
     </div>
-    <div class="canvas-area" id="canvasArea">
-      <div class="drag-overlay" id="dragOverlay">Pusti obrázok sem</div>
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">🖼️</div>
-        <p>Nahraj obrázok alebo vyber šablónu</p>
-        <small>Podporované: JPG, PNG, GIF, WebP</small>
-        <button class="upload-trigger" onclick="document.getElementById('fileInput').click()">Vybrať obrázok</button>
+    <div class="canvas-area" id="imgCanvasArea">
+      <div class="drop-zone" id="imgDropZone">
+        <div class="drop-icon">🖼️</div>
+        <div style="color:#fff;font-size:14px;font-weight:500">Nahraj obrázok</div>
+        <div style="font-size:12px;opacity:0.5;color:#fff">Drag & Drop alebo klikni</div>
+        <button class="upload-btn" onclick="document.getElementById('imgFile').click()">Vybrať súbor</button>
       </div>
-      <canvas id="memeCanvas" class="hidden"></canvas>
+      <canvas id="imgCanvas" class="hidden"></canvas>
+      <canvas id="stickerLayer" class="hidden"></canvas>
+      <input type="file" id="imgFile" accept="image/*" class="hidden">
     </div>
     <div class="canvas-footer">
-      <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v9M4 7l4-4 4 4"/><path d="M2 13h12"/></svg>
-        Nový obrázok
-      </button>
-      <button class="btn btn-outline" onclick="resetCanvas()">Resetovať</button>
-      <button class="btn btn-primary" onclick="downloadMeme()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v9M4 11l4 4 4-4"/><path d="M2 13h12"/></svg>
-        Stiahnuť meme
-      </button>
+      <button class="btn btn-outline" onclick="document.getElementById('imgFile').click()">↑ Nový</button>
+      <button class="btn btn-outline" onclick="rotateImg()">⟳ Otočiť</button>
+      <button class="btn btn-outline" onclick="flipImg('h')">⇄ Flip</button>
+      <button class="btn btn-primary" onclick="downloadImg()">↓ Stiahnuť PNG</button>
     </div>
   </div>
 
-  <!-- Sidebar -->
   <div class="sidebar">
-
-    <!-- Templates -->
+    <!-- Text -->
     <div class="card">
-      <div class="card-header">Šablóny</div>
+      <div class="card-header">Text</div>
       <div class="card-body">
-        <div class="templates-grid">
-          <button class="template-btn" onclick="loadTemplate('drake')">Drake</button>
-          <button class="template-btn" onclick="loadTemplate('distracted')">Distracted BF</button>
-          <button class="template-btn" onclick="loadTemplate('buttons')">Two Buttons</button>
-          <button class="template-btn" onclick="loadTemplate('expanding')">Expanding Brain</button>
-          <button class="template-btn" onclick="loadTemplate('change')">Change My Mind</button>
-          <button class="template-btn" onclick="loadTemplate('disaster')">This is Fine</button>
+        <div>
+          <label>Horný text</label>
+          <textarea id="topText" rows="2" placeholder="Napíš text..." oninput="drawImg()"></textarea>
         </div>
-      </div>
-    </div>
-
-    <!-- Top Text -->
-    <div class="card">
-      <div class="card-header">Horný text</div>
-      <div class="card-body">
-        <textarea id="topText" rows="2" placeholder="Horný text memu..." oninput="redraw()"></textarea>
+        <div>
+          <label>Dolný text</label>
+          <textarea id="bottomText" rows="2" placeholder="Napíš text..." oninput="drawImg()"></textarea>
+        </div>
         <div class="row">
+          <div>
+            <label>Font</label>
+            <select id="imgFont" onchange="drawImg()">
+              <option value="Impact">Impact</option>
+              <option value="'DM Sans'">DM Sans</option>
+              <option value="Arial Black">Arial Black</option>
+              <option value="Comic Sans MS">Comic Sans</option>
+            </select>
+          </div>
           <div>
             <label>Veľkosť</label>
             <div class="slider-row">
-              <input type="range" id="topSize" min="16" max="120" value="48" step="1" oninput="updateVal('topSize','topSizeVal');redraw()">
-              <span class="slider-val" id="topSizeVal">48</span>
+              <input type="range" id="imgFontSize" min="16" max="100" value="48" oninput="uv('imgFontSize','ifv');drawImg()">
+              <span class="slider-val" id="ifv">48</span>
             </div>
           </div>
         </div>
         <div>
           <label>Farba textu</label>
           <div class="color-row">
-            <div class="color-dot active" style="background:#ffffff" data-color="#ffffff" onclick="setTextColor('top','#ffffff',this)"></div>
-            <div class="color-dot" style="background:#111111" data-color="#111111" onclick="setTextColor('top','#111111',this)"></div>
-            <div class="color-dot" style="background:#ff3b00" data-color="#ff3b00" onclick="setTextColor('top','#ff3b00',this)"></div>
-            <div class="color-dot" style="background:#ffd60a" data-color="#ffd60a" onclick="setTextColor('top','#ffd60a',this)"></div>
-            <div class="color-dot" style="background:#34c759" data-color="#34c759" onclick="setTextColor('top','#34c759',this)"></div>
-            <input type="color" id="topColorCustom" value="#ffffff" oninput="setTextColor('top',this.value,null)" title="Vlastná farba">
+            <div class="color-dot active" style="background:#fff" onclick="setImgColor('#fff',this)"></div>
+            <div class="color-dot" style="background:#111" onclick="setImgColor('#111',this)"></div>
+            <div class="color-dot" style="background:#ff3b00" onclick="setImgColor('#ff3b00',this)"></div>
+            <div class="color-dot" style="background:#ffd60a" onclick="setImgColor('#ffd60a',this)"></div>
+            <div class="color-dot" style="background:#34c759" onclick="setImgColor('#34c759',this)"></div>
+            <input type="color" id="imgColorCustom" value="#ffffff" oninput="setImgColor(this.value,null);drawImg()">
+          </div>
+        </div>
+        <div>
+          <label>Obrys textu</label>
+          <div class="slider-row">
+            <input type="range" id="imgStroke" min="0" max="12" value="3" oninput="uv('imgStroke','isv');drawImg()">
+            <span class="slider-val" id="isv">3</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Text -->
+    <!-- Filters & Effects -->
     <div class="card">
-      <div class="card-header">Dolný text</div>
+      <div class="card-header">Filtre & Efekty</div>
       <div class="card-body">
-        <textarea id="bottomText" rows="2" placeholder="Dolný text memu..." oninput="redraw()"></textarea>
+        <div class="presets-grid">
+          <button class="preset-btn active" onclick="applyImgPreset('normal',this)">Normal</button>
+          <button class="preset-btn" onclick="applyImgPreset('bw',this)">B&W</button>
+          <button class="preset-btn" onclick="applyImgPreset('warm',this)">Warm</button>
+          <button class="preset-btn" onclick="applyImgPreset('cold',this)">Cold</button>
+          <button class="preset-btn" onclick="applyImgPreset('vintage',this)">Vintage</button>
+          <button class="preset-btn" onclick="applyImgPreset('invert',this)">Invert</button>
+          <button class="preset-btn" onclick="applyImgPreset('faded',this)">Faded</button>
+          <button class="preset-btn" onclick="applyImgPreset('dramatic',this)">Dramatic</button>
+          <button class="preset-btn" onclick="applyImgPreset('sunset',this)">Sunset</button>
+        </div>
         <div>
-          <label>Veľkosť</label>
+          <label>Jas</label>
           <div class="slider-row">
-            <input type="range" id="bottomSize" min="16" max="120" value="48" step="1" oninput="updateVal('bottomSize','bottomSizeVal');redraw()">
-            <span class="slider-val" id="bottomSizeVal">48</span>
+            <input type="range" id="imgBright" min="-100" max="100" value="0" oninput="uv('imgBright','ibv');drawImg()">
+            <span class="slider-val" id="ibv">0</span>
+          </div>
+        </div>
+        <div>
+          <label>Kontrast</label>
+          <div class="slider-row">
+            <input type="range" id="imgContrast" min="-100" max="100" value="0" oninput="uv('imgContrast','icv');drawImg()">
+            <span class="slider-val" id="icv">0</span>
+          </div>
+        </div>
+        <div>
+          <label>Saturácia</label>
+          <div class="slider-row">
+            <input type="range" id="imgSat" min="-100" max="100" value="0" oninput="uv('imgSat','isatv');drawImg()">
+            <span class="slider-val" id="isatv">0</span>
+          </div>
+        </div>
+        <div>
+          <label>Pixelizácia</label>
+          <div class="slider-row">
+            <input type="range" id="imgPixel" min="1" max="32" value="1" oninput="uv('imgPixel','ipxv');drawImg()">
+            <span class="slider-val" id="ipxv">1</span>
+          </div>
+        </div>
+        <div>
+          <label>Vignette</label>
+          <div class="slider-row">
+            <input type="range" id="imgVignette" min="0" max="100" value="0" oninput="uv('imgVignette','ivgv');drawImg()">
+            <span class="slider-val" id="ivgv">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Meme Generator -->
+    <div class="card">
+      <div class="card-header">🤖 AI Meme Generátor</div>
+      <div class="card-body">
+        <div>
+          <label>Téma / kontext (nepovinné)</label>
+          <input type="text" id="aiTopic" placeholder="napr. škola, pondelok, káva...">
+        </div>
+        <div style="display:flex;gap:6px">
+          <select id="aiMood">
+            <option value="funny">😂 Vtipný</option>
+            <option value="dark">💀 Dark humor</option>
+            <option value="wholesome">🥰 Wholesome</option>
+            <option value="absurd">🤡 Absurdný</option>
+            <option value="slovak">🇸🇰 Slovenský</option>
+          </select>
+        </div>
+        <button class="btn btn-green" onclick="generateAIMeme()" id="aiBtn">✨ Vygenerovať text</button>
+        <div id="aiResult" style="display:none;background:var(--gray-100);border-radius:8px;padding:10px;font-size:13px;line-height:1.5">
+          <div id="aiTopResult" style="font-weight:600;margin-bottom:4px"></div>
+          <div id="aiBotResult" style="color:var(--gray-600)"></div>
+          <button class="btn btn-outline" style="margin-top:8px;font-size:12px;width:100%" onclick="useAIText()">➕ Použiť tento text</button>
+        </div>
+        <div id="aiLoading" style="display:none;text-align:center;color:var(--gray-400);font-size:13px;padding:8px">
+          ⏳ Generujem...
+        </div>
+      </div>
+    </div>
+
+    <!-- Stickers -->
+    <div class="card">
+      <div class="card-header">Nálepky</div>
+      <div class="card-body">
+        <div class="sticker-grid" id="stickerGrid"></div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:4px">Klikni na nálepku → klikni na obrázok kde ju chceš</div>
+        <button class="btn btn-outline" style="font-size:12px" onclick="clearStickers()">Vymazať nálepky</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== VIDEO TAB ===================== -->
+<div id="tab-video" class="tab-content">
+<div class="app">
+  <div class="canvas-card">
+    <div class="canvas-header">
+      <span class="canvas-title">VIDEO EDITOR</span>
+      <span id="vidInfo" style="font-size:12px;color:var(--gray-400)">—</span>
+    </div>
+    <div class="canvas-area" id="vidCanvasArea" style="min-height:420px">
+      <div class="drop-zone" id="vidDropZone">
+        <div class="drop-icon">🎬</div>
+        <div style="color:#fff;font-size:14px;font-weight:500">Nahraj video</div>
+        <div style="font-size:12px;opacity:0.5;color:#fff">MP4, WebM, MOV — max ~100MB</div>
+        <button class="upload-btn" onclick="document.getElementById('vidFile').click()">Vybrať video</button>
+      </div>
+      <canvas id="vidCanvas" class="hidden"></canvas>
+      <video id="videoEl" playsinline></video>
+      <div class="video-controls hidden" id="vidControls">
+        <button class="vc-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <input type="range" id="videoProgress" min="0" max="100" value="0" step="0.1" oninput="seekVideo(this.value)">
+        <span class="vc-time" id="vidTime">0:00 / 0:00</span>
+      </div>
+      <input type="file" id="vidFile" accept="video/*" class="hidden">
+    </div>
+    <div class="canvas-footer" id="vidFooter" style="flex-wrap:wrap;gap:6px">
+      <button class="btn btn-outline" onclick="document.getElementById('vidFile').click()">↑ Nové video</button>
+      <button class="btn btn-outline" onclick="captureFrame()">📸 Zachytiť frame</button>
+      <button class="btn btn-blue" onclick="startGifExport()" id="gifBtn">🎞 Exportovať GIF</button>
+      <div class="gif-progress" id="gifProgress" style="width:100%">
+        <div class="gif-label" id="gifLabel">Generujem GIF...</div>
+        <div class="gif-bar"><div class="gif-fill" id="gifFill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <!-- Video Text -->
+    <div class="card">
+      <div class="card-header">Text na video</div>
+      <div class="card-body">
+        <div>
+          <label>Horný text</label>
+          <textarea id="vidTopText" rows="2" placeholder="Text na video..." oninput="drawVidFrame()"></textarea>
+        </div>
+        <div>
+          <label>Dolný text</label>
+          <textarea id="vidBottomText" rows="2" placeholder="Text na video..." oninput="drawVidFrame()"></textarea>
+        </div>
+        <div>
+          <label>Veľkosť písma</label>
+          <div class="slider-row">
+            <input type="range" id="vidFontSize" min="16" max="100" value="42" oninput="uv('vidFontSize','vfsv');drawVidFrame()">
+            <span class="slider-val" id="vfsv">42</span>
           </div>
         </div>
         <div>
           <label>Farba textu</label>
           <div class="color-row">
-            <div class="color-dot active" style="background:#ffffff" data-color="#ffffff" onclick="setTextColor('bottom','#ffffff',this)"></div>
-            <div class="color-dot" style="background:#111111" data-color="#111111" onclick="setTextColor('bottom','#111111',this)"></div>
-            <div class="color-dot" style="background:#ff3b00" data-color="#ff3b00" onclick="setTextColor('bottom','#ff3b00',this)"></div>
-            <div class="color-dot" style="background:#ffd60a" data-color="#ffd60a" onclick="setTextColor('bottom','#ffd60a',this)"></div>
-            <div class="color-dot" style="background:#34c759" data-color="#34c759" onclick="setTextColor('bottom','#34c759',this)"></div>
-            <input type="color" id="bottomColorCustom" value="#ffffff" oninput="setTextColor('bottom',this.value,null)" title="Vlastná farba">
+            <div class="color-dot active" style="background:#fff" onclick="setVidColor('#fff',this)"></div>
+            <div class="color-dot" style="background:#ffd60a" onclick="setVidColor('#ffd60a',this)"></div>
+            <div class="color-dot" style="background:#ff3b00" onclick="setVidColor('#ff3b00',this)"></div>
+            <div class="color-dot" style="background:#111" onclick="setVidColor('#111',this)"></div>
+            <input type="color" id="vidColorCustom" value="#ffffff" oninput="setVidColor(this.value,null);drawVidFrame()">
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Style -->
+    <!-- Video Filters -->
     <div class="card">
-      <div class="card-header">Štýl textu</div>
+      <div class="card-header">Filtre videa</div>
+      <div class="card-body">
+        <div class="presets-grid">
+          <button class="preset-btn active" onclick="setVidFilter('none',this)">Normal</button>
+          <button class="preset-btn" onclick="setVidFilter('grayscale(1)',this)">B&W</button>
+          <button class="preset-btn" onclick="setVidFilter('sepia(0.8)',this)">Sepia</button>
+          <button class="preset-btn" onclick="setVidFilter('invert(1)',this)">Invert</button>
+          <button class="preset-btn" onclick="setVidFilter('hue-rotate(180deg)',this)">Hue</button>
+          <button class="preset-btn" onclick="setVidFilter('contrast(1.5) saturate(1.5)',this)">Vivid</button>
+        </div>
+        <div>
+          <label>Jas</label>
+          <div class="slider-row">
+            <input type="range" id="vidBright" min="0" max="200" value="100" oninput="uv('vidBright','vbv');drawVidFrame()">
+            <span class="slider-val" id="vbv">100</span>
+          </div>
+        </div>
+        <div>
+          <label>Kontrast</label>
+          <div class="slider-row">
+            <input type="range" id="vidContrast" min="0" max="200" value="100" oninput="uv('vidContrast','vcv');drawVidFrame()">
+            <span class="slider-val" id="vcv">100</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GIF Settings -->
+    <div class="card">
+      <div class="card-header">GIF nastavenia</div>
       <div class="card-body">
         <div>
-          <label>Font</label>
-          <select id="fontStyle" onchange="redraw()">
-            <option value="Impact">Impact (klasický meme)</option>
-            <option value="'DM Sans'">DM Sans (moderný)</option>
-            <option value="Arial Black">Arial Black</option>
-            <option value="Comic Sans MS">Comic Sans</option>
-            <option value="Georgia">Georgia</option>
+          <label>Začiatok (s)</label>
+          <div class="slider-row">
+            <input type="range" id="gifStart" min="0" max="30" value="0" step="0.1" oninput="uv('gifStart','gsv')">
+            <span class="slider-val" id="gsv">0s</span>
+          </div>
+        </div>
+        <div>
+          <label>Dĺžka (s)</label>
+          <div class="slider-row">
+            <input type="range" id="gifDuration" min="0.5" max="8" value="3" step="0.5" oninput="uv('gifDuration','gdv')">
+            <span class="slider-val" id="gdv">3s</span>
+          </div>
+        </div>
+        <div>
+          <label>Kvalita</label>
+          <select id="gifQuality">
+            <option value="4">Vysoká (pomalšie)</option>
+            <option value="8" selected>Stredná</option>
+            <option value="16">Nízka (rýchlejšie)</option>
           </select>
         </div>
-        <div>
-          <label>Obrys textu</label>
-          <div class="slider-row">
-            <input type="range" id="strokeWidth" min="0" max="12" value="3" step="1" oninput="updateVal('strokeWidth','strokeVal');redraw()">
-            <span class="slider-val" id="strokeVal">3</span>
-          </div>
-        </div>
-        <div>
-          <label>Pozícia horného textu</label>
-          <div class="slider-row">
-            <input type="range" id="topPos" min="0" max="100" value="8" step="1" oninput="updateVal('topPos','topPosVal');redraw()">
-            <span class="slider-val" id="topPosVal">8</span>
-          </div>
-        </div>
-        <div>
-          <label>Pozícia dolného textu</label>
-          <div class="slider-row">
-            <input type="range" id="bottomPos" min="0" max="100" value="92" step="1" oninput="updateVal('bottomPos','bottomPosVal');redraw()">
-            <span class="slider-val" id="bottomPosVal">92</span>
-          </div>
-        </div>
+        <div style="font-size:11px;color:var(--gray-400)">GIF export môže trvať 10–30 sekúnd. Text a filtre sa zachovajú.</div>
       </div>
     </div>
 
+    <!-- AI Meme Generator Video -->
+    <div class="card">
+      <div class="card-header">🤖 AI Meme Generátor</div>
+      <div class="card-body">
+        <div>
+          <label>Téma (nepovinné)</label>
+          <input type="text" id="vidAiTopic" placeholder="napr. škola, pondelok...">
+        </div>
+        <select id="vidAiMood">
+          <option value="funny">😂 Vtipný</option>
+          <option value="dark">💀 Dark humor</option>
+          <option value="wholesome">🥰 Wholesome</option>
+          <option value="absurd">🤡 Absurdný</option>
+          <option value="slovak">🇸🇰 Slovenský</option>
+        </select>
+        <button class="btn btn-green" onclick="generateVidAIMeme()" id="vidAiBtn">✨ Vygenerovať text</button>
+        <div id="vidAiResult" style="display:none;background:var(--gray-100);border-radius:8px;padding:10px;font-size:13px;line-height:1.5">
+          <div id="vidAiTopResult" style="font-weight:600;margin-bottom:4px"></div>
+          <div id="vidAiBotResult" style="color:var(--gray-600)"></div>
+          <button class="btn btn-outline" style="margin-top:8px;font-size:12px;width:100%" onclick="useVidAIText()">➕ Použiť tento text</button>
+        </div>
+        <div id="vidAiLoading" style="display:none;text-align:center;color:var(--gray-400);font-size:13px;padding:8px">⏳ Generujem...</div>
+      </div>
+    </div>
+
+    <!-- Stickers on video -->
+    <div class="card">
+      <div class="card-header">Nálepky</div>
+      <div class="card-body">
+        <div class="sticker-grid" id="vidStickerGrid"></div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:4px">Klikni nálepku → klikni na video</div>
+        <button class="btn btn-outline" style="font-size:12px" onclick="clearVidStickers()">Vymazať</button>
+      </div>
+    </div>
   </div>
 </div>
+</div>
 
-<input type="file" id="fileInput" accept="image/*" class="hidden">
-
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
 <script>
-const canvas = document.getElementById('memeCanvas');
-const ctx = canvas.getContext('2d');
-let img = null;
-let topColor = '#ffffff';
-let bottomColor = '#ffffff';
-
-function updateVal(sliderId, valId) {
-  document.getElementById(valId).textContent = document.getElementById(sliderId).value;
+// ===================== UTILS =====================
+function uv(sid, vid) {
+  const v = document.getElementById(sid).value;
+  const el = document.getElementById(vid);
+  if (sid.includes('Start')) el.textContent = parseFloat(v).toFixed(1)+'s';
+  else if (sid.includes('Duration')) el.textContent = parseFloat(v).toFixed(1)+'s';
+  else el.textContent = v;
 }
 
-function setTextColor(which, color, el) {
-  if (which === 'top') {
-    topColor = color;
-    document.querySelectorAll('#topText ~ * .color-dot, .card:nth-child(2) .color-dot').forEach(d => d.classList.remove('active'));
-  } else {
-    bottomColor = color;
-  }
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (t==='image'?0:1)===i));
+  document.getElementById('tab-image').classList.toggle('active', t==='image');
+  document.getElementById('tab-video').classList.toggle('active', t==='video');
+}
+
+// ===================== IMAGE =====================
+const imgCanvas = document.getElementById('imgCanvas');
+const imgCtx = imgCanvas.getContext('2d');
+const stickerCanvas = document.getElementById('stickerLayer');
+const stickerCtx = stickerCanvas.getContext('2d');
+let imgObj = null, imgRotation = 0, imgFlipH = 1;
+let imgTextColor = '#ffffff';
+let imgFilter = 'normal';
+let imgStickers = [];
+let selectedSticker = null;
+
+const STICKERS = ['😂','🔥','💀','👀','🤣','😭','💯','🤔','😤','🎉','🥵','🫡','🤡','👑','💪','😎','🥶','😍','🤯','💥'];
+
+function initStickerGrids() {
+  ['stickerGrid','vidStickerGrid'].forEach(id => {
+    const g = document.getElementById(id);
+    STICKERS.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'sticker-btn'; b.textContent = s;
+      b.onclick = () => { selectedSticker = s; selectedVidSticker = s; };
+      g.appendChild(b);
+    });
+  });
+}
+initStickerGrids();
+
+imgCanvas.addEventListener('click', function(e) {
+  if (!selectedSticker || !imgObj) return;
+  const r = imgCanvas.getBoundingClientRect();
+  const sx = (e.clientX - r.left) / r.width * imgCanvas.width;
+  const sy = (e.clientY - r.top) / r.height * imgCanvas.height;
+  imgStickers.push({ emoji: selectedSticker, x: sx, y: sy, size: 60 });
+  drawImg();
+  selectedSticker = null;
+});
+
+function setImgColor(c, el) {
+  imgTextColor = c;
+  document.querySelectorAll('#tab-image .color-dot').forEach(d => d.classList.remove('active'));
   if (el) el.classList.add('active');
-  redraw();
+  drawImg();
 }
 
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-  const lines = [];
-  for (let w of words) {
-    const test = line + (line ? ' ' : '') + w;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-    } else { line = test; }
+function applyImgPreset(name, el) {
+  document.querySelectorAll('#tab-image .preset-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  imgFilter = name;
+  const presets = {
+    normal:   [0,   0,   0,   1, 0],
+    bw:       [0,   20, -100, 1, 0],
+    warm:     [15,  15,  30,  1, 0],
+    cold:     [-5,  10, -20,  1, 0],
+    vintage:  [10,  30, -40,  1, 40],
+    invert:   [0,   0,   0,   1, 0],
+    faded:    [20, -20, -30,  1, 0],
+    dramatic: [-10, 60,  20,  1, 60],
+    sunset:   [20,  20,  40,  1, 20],
+  };
+  const [b,c,s,px,vg] = presets[name] || [0,0,0,1,0];
+  document.getElementById('imgBright').value = b;
+  document.getElementById('imgContrast').value = c;
+  document.getElementById('imgSat').value = s;
+  document.getElementById('imgPixel').value = px;
+  document.getElementById('imgVignette').value = vg;
+  document.getElementById('ibv').textContent = b;
+  document.getElementById('icv').textContent = c;
+  document.getElementById('isatv').textContent = s;
+  document.getElementById('ipxv').textContent = px;
+  document.getElementById('ivgv').textContent = vg;
+  drawImg();
+}
+
+function loadImg(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    imgObj = new Image();
+    imgObj.onload = () => {
+      imgRotation = 0; imgFlipH = 1; imgStickers = [];
+      const maxW = document.getElementById('imgCanvasArea').clientWidth - 20;
+      const scale = Math.min(1, maxW / imgObj.width, 600 / imgObj.height);
+      imgCanvas.width = Math.round(imgObj.width * scale);
+      imgCanvas.height = Math.round(imgObj.height * scale);
+      stickerCanvas.width = imgCanvas.width;
+      stickerCanvas.height = imgCanvas.height;
+      stickerCanvas.style.width = imgCanvas.style.width;
+      stickerCanvas.style.height = imgCanvas.style.height;
+      document.getElementById('imgDropZone').classList.add('hidden');
+      imgCanvas.classList.remove('hidden');
+      stickerCanvas.classList.remove('hidden');
+      document.getElementById('imgDimensions').textContent = `${imgObj.width}×${imgObj.height}`;
+      drawImg();
+    };
+    imgObj.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function applyPixelFilter(ctx, w, h) {
+  const bright = parseInt(document.getElementById('imgBright').value);
+  const contrast = parseInt(document.getElementById('imgContrast').value);
+  const sat = parseInt(document.getElementById('imgSat').value);
+  const pixelSize = parseInt(document.getElementById('imgPixel').value);
+  const inv = imgFilter === 'invert';
+
+  // Pixelation
+  if (pixelSize > 1) {
+    const tmp = document.createElement('canvas');
+    tmp.width = Math.max(1, Math.floor(w / pixelSize));
+    tmp.height = Math.max(1, Math.floor(h / pixelSize));
+    const tc = tmp.getContext('2d');
+    tc.drawImage(ctx.canvas, 0, 0, tmp.width, tmp.height);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(tmp, 0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
   }
-  if (line) lines.push(line);
-  return lines;
+
+  if (bright===0 && contrast===0 && sat===0 && !inv) return;
+  const d = ctx.getImageData(0,0,w,h);
+  const data = d.data;
+  const cf = (contrast + 100) / 100;
+  for (let i=0; i<data.length; i+=4) {
+    let r=data[i], g=data[i+1], b=data[i+2];
+    r+=bright; g+=bright; b+=bright;
+    r=cf*(r-128)+128; g=cf*(g-128)+128; b=cf*(b-128)+128;
+    const gray=0.299*r+0.587*g+0.114*b;
+    const sf=(sat+100)/100;
+    r=gray+(r-gray)*sf; g=gray+(g-gray)*sf; b=gray+(b-gray)*sf;
+    if(inv){r=255-r;g=255-g;b=255-b;}
+    data[i]=Math.max(0,Math.min(255,r));
+    data[i+1]=Math.max(0,Math.min(255,g));
+    data[i+2]=Math.max(0,Math.min(255,b));
+  }
+  ctx.putImageData(d,0,0);
 }
 
-function drawText(text, yPercent, color, size, isBottom) {
-  if (!text.trim()) return;
-  const font = document.getElementById('fontStyle').value;
-  const stroke = parseInt(document.getElementById('strokeWidth').value);
-  ctx.font = `900 ${size}px ${font}`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const maxWidth = canvas.width * 0.9;
-  const lineHeight = size * 1.15;
-  const lines = wrapText(ctx, text.toUpperCase(), canvas.width/2, 0, maxWidth, lineHeight);
-  let startY = (yPercent / 100) * canvas.height;
-  if (isBottom) startY = startY - (lines.length - 1) * lineHeight / 2;
-  else startY = startY + (lines.length - 1) * lineHeight / 2;
+function applyVignette(ctx, w, h) {
+  const strength = parseInt(document.getElementById('imgVignette').value);
+  if (strength === 0) return;
+  const grad = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.3, w/2, h/2, Math.max(w,h)*0.75);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, `rgba(0,0,0,${strength/100})`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+}
 
-  lines.forEach((line, i) => {
-    const y = isBottom ? startY - (lines.length - 1 - i) * lineHeight : startY - (lines.length - 1 - i) * lineHeight;
-    if (stroke > 0) {
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = stroke * 2;
-      ctx.lineJoin = 'round';
-      ctx.strokeText(line, canvas.width / 2, y);
-    }
-    ctx.fillStyle = color;
-    ctx.fillText(line, canvas.width / 2, y);
+function drawImg() {
+  if (!imgObj) return;
+  imgCtx.clearRect(0,0,imgCanvas.width,imgCanvas.height);
+  imgCtx.save();
+  imgCtx.translate(imgCanvas.width/2, imgCanvas.height/2);
+  imgCtx.rotate(imgRotation*Math.PI/180);
+  imgCtx.scale(imgFlipH,1);
+  imgCtx.drawImage(imgObj,-imgCanvas.width/2,-imgCanvas.height/2,imgCanvas.width,imgCanvas.height);
+  imgCtx.restore();
+  applyPixelFilter(imgCtx, imgCanvas.width, imgCanvas.height);
+  applyVignette(imgCtx, imgCanvas.width, imgCanvas.height);
+  drawImgText(imgCtx, imgCanvas.width, imgCanvas.height);
+  stickerCtx.clearRect(0,0,stickerCanvas.width,stickerCanvas.height);
+  imgStickers.forEach(s => {
+    stickerCtx.font = `${s.size}px serif`;
+    stickerCtx.textAlign = 'center';
+    stickerCtx.textBaseline = 'middle';
+    stickerCtx.fillText(s.emoji, s.x, s.y);
   });
 }
 
-function redraw() {
-  if (!img) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  const topText = document.getElementById('topText').value;
-  const bottomText = document.getElementById('bottomText').value;
-  const topSize = parseInt(document.getElementById('topSize').value);
-  const bottomSize = parseInt(document.getElementById('bottomSize').value);
-  const topPos = parseInt(document.getElementById('topPos').value);
-  const bottomPos = parseInt(document.getElementById('bottomPos').value);
-  drawText(topText, topPos, topColor, topSize, false);
-  drawText(bottomText, bottomPos, bottomColor, bottomSize, true);
-}
-
-function showCanvas(image) {
-  img = image;
-  const maxW = document.getElementById('canvasArea').clientWidth;
-  const scale = Math.min(1, maxW / img.width);
-  canvas.width = Math.round(img.width * scale);
-  canvas.height = Math.round(img.height * scale);
-  document.getElementById('emptyState').classList.add('hidden');
-  canvas.classList.remove('hidden');
-  document.getElementById('dimensions').textContent = `${img.naturalWidth || img.width} × ${img.naturalHeight || img.height}`;
-  redraw();
-}
-
-function loadFromFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const image = new Image();
-    image.onload = () => showCanvas(image);
-    image.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-document.getElementById('fileInput').addEventListener('change', e => {
-  if (e.target.files[0]) loadFromFile(e.target.files[0]);
-});
-
-// Drag & drop
-const area = document.getElementById('canvasArea');
-const overlay = document.getElementById('dragOverlay');
-area.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.add('visible'); });
-area.addEventListener('dragleave', () => overlay.classList.remove('visible'));
-area.addEventListener('drop', e => {
-  e.preventDefault();
-  overlay.classList.remove('visible');
-  if (e.dataTransfer.files[0]) loadFromFile(e.dataTransfer.files[0]);
-});
-
-// Templates — generate colored placeholder canvases
-const templates = {
-  drake: { colors: ['#c8a96e','#8b9db5'], labels: ['No:', 'Yes:'], topText: '', bottomText: '' },
-  distracted: { colors: ['#e8c4a0','#7ab5e8'], labels: ['Distracted BF'], topText: 'Keď vidíš niečo nové', bottomText: 'Tvoja ex' },
-  buttons: { colors: ['#f5e6d3','#d4e6f5'], labels: ['Two Buttons'], topText: 'STLAČ TLAČIDLO', bottomText: 'ALE KTORÉ???' },
-  expanding: { colors: ['#1a1a2e','#16213e'], labels: ['Big Brain'], topText: 'MALÝ NÁPAD', bottomText: 'VEĽKÝ MOZOG' },
-  change: { colors: ['#deb887','#87ceeb'], labels: ['Change My Mind'], topText: 'Meme generator', bottomText: 'lepší ako Photoshop' },
-  disaster: { colors: ['#ff6b35','#f7c59f'], labels: ['This is Fine'], topText: 'JA KEĎ', bottomText: 'VŠETKO HORÍ' },
-};
-
-function loadTemplate(name) {
-  const t = templates[name];
-  const offscreen = document.createElement('canvas');
-  offscreen.width = 600; offscreen.height = 400;
-  const c = offscreen.getContext('2d');
-  const grad = c.createLinearGradient(0,0,600,400);
-  grad.addColorStop(0, t.colors[0]);
-  grad.addColorStop(1, t.colors[1] || t.colors[0]);
-  c.fillStyle = grad;
-  c.fillRect(0,0,600,400);
-  c.fillStyle = 'rgba(0,0,0,0.15)';
-  c.font = 'bold 18px DM Sans';
-  c.textAlign = 'center';
-  c.fillText(`[ ${name.toUpperCase()} TEMPLATE ]`, 300, 200);
-
-  const image = new Image();
-  image.onload = () => {
-    showCanvas(image);
-    document.getElementById('topText').value = t.topText;
-    document.getElementById('bottomText').value = t.bottomText;
-    redraw();
-  };
-  image.src = offscreen.toDataURL();
-}
-
-function resetCanvas() {
-  document.getElementById('topText').value = '';
-  document.getElementById('bottomText').value = '';
-  document.getElementById('topSize').value = 48;
-  document.getElementById('bottomSize').value = 48;
-  document.getElementById('strokeWidth').value = 3;
-  document.getElementById('topPos').value = 8;
-  document.getElementById('bottomPos').value = 92;
-  ['topSizeVal','bottomSizeVal','strokeVal','topPosVal','bottomPosVal'].forEach(id => {
-    const el = document.getElementById(id);
-    if (id === 'topPosVal') el.textContent = 8;
-    else if (id === 'bottomPosVal') el.textContent = 92;
-    else if (id === 'strokeVal') el.textContent = 3;
-    else el.textContent = 48;
-  });
-  topColor = '#ffffff'; bottomColor = '#ffffff';
-  redraw();
-}
-
-function downloadMeme() {
-  if (!img) return;
-  const full = document.createElement('canvas');
-  full.width = img.naturalWidth || img.width;
-  full.height = img.naturalHeight || img.height;
-  const fc = full.getContext('2d');
-  fc.drawImage(img, 0, 0, full.width, full.height);
-
-  const font = document.getElementById('fontStyle').value;
-  const stroke = parseInt(document.getElementById('strokeWidth').value);
-  const topText = document.getElementById('topText').value;
-  const bottomText = document.getElementById('bottomText').value;
-  const topSize = parseInt(document.getElementById('topSize').value) * (full.width / canvas.width);
-  const bottomSize = parseInt(document.getElementById('bottomSize').value) * (full.width / canvas.width);
-  const topPos = parseInt(document.getElementById('topPos').value);
-  const bottomPos = parseInt(document.getElementById('bottomPos').value);
-
-  function drawFull(text, yPercent, color, size, isBottom) {
+function drawImgText(ctx, w, h) {
+  const top = document.getElementById('topText').value;
+  const bot = document.getElementById('bottomText').value;
+  const size = parseInt(document.getElementById('imgFontSize').value);
+  const font = document.getElementById('imgFont').value;
+  const stroke = parseInt(document.getElementById('imgStroke').value);
+  function drawT(text, yPct) {
     if (!text.trim()) return;
-    fc.font = `900 ${size}px ${font}`;
-    fc.textAlign = 'center';
-    fc.textBaseline = 'middle';
-    const maxWidth = full.width * 0.9;
-    const lineHeight = size * 1.15;
-    const words = text.split(' ');
-    let line = '', lines = [];
-    for (let w of words) {
-      const test = line + (line ? ' ' : '') + w;
-      if (fc.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
-      else line = test;
-    }
-    if (line) lines.push(line);
-    let startY = (yPercent / 100) * full.height;
-    lines.forEach((l, i) => {
-      const y = isBottom ? startY - (lines.length - 1 - i) * lineHeight : startY - (lines.length - 1 - i) * lineHeight;
-      if (stroke > 0) { fc.strokeStyle = '#000'; fc.lineWidth = stroke * 2 * (full.width/canvas.width); fc.lineJoin = 'round'; fc.strokeText(l.toUpperCase(), full.width/2, y); }
-      fc.fillStyle = color; fc.fillText(l.toUpperCase(), full.width/2, y);
+    ctx.font = `900 ${size}px ${font}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const maxW = w * 0.9;
+    const words = text.split(' '); let line='', lines=[];
+    words.forEach(word => {
+      const test = line+(line?' ':'')+word;
+      if (ctx.measureText(test).width>maxW && line) { lines.push(line); line=word; }
+      else line=test;
+    });
+    if(line) lines.push(line);
+    const lh = size*1.2;
+    lines.forEach((l,i) => {
+      const y = (yPct/100)*h + (i-(lines.length-1)/2)*lh;
+      if(stroke>0){ctx.strokeStyle='#000';ctx.lineWidth=stroke*2;ctx.lineJoin='round';ctx.strokeText(l.toUpperCase(),w/2,y);}
+      ctx.fillStyle=imgTextColor; ctx.fillText(l.toUpperCase(),w/2,y);
     });
   }
+  drawT(top,8); drawT(bot,92);
+}
 
-  drawFull(topText, topPos, topColor, topSize, false);
-  drawFull(bottomText, bottomPos, bottomColor, bottomSize, true);
+function rotateImg() { if(!imgObj)return; imgRotation=(imgRotation+90)%360; drawImg(); }
+function flipImg(d) { if(!imgObj)return; if(d==='h')imgFlipH*=-1; drawImg(); }
+function clearStickers() { imgStickers=[]; drawImg(); }
 
-  const link = document.createElement('a');
-  link.download = 'meme.png';
-  link.href = full.toDataURL('image/png');
-  link.click();
+function downloadImg() {
+  if(!imgObj)return;
+  const out = document.createElement('canvas');
+  out.width = imgObj.width; out.height = imgObj.height;
+  const octx = out.getContext('2d');
+  octx.drawImage(imgObj,0,0);
+  const bright = parseInt(document.getElementById('imgBright').value);
+  const contrast = parseInt(document.getElementById('imgContrast').value);
+  const sat = parseInt(document.getElementById('imgSat').value);
+  const origBright = document.getElementById('imgBright').value;
+  applyPixelFilter(octx, out.width, out.height);
+  // Scale stickers
+  const sx = imgObj.width / imgCanvas.width;
+  const sy = imgObj.height / imgCanvas.height;
+  imgStickers.forEach(s => {
+    octx.font = `${s.size*sx}px serif`;
+    octx.textAlign='center'; octx.textBaseline='middle';
+    octx.fillText(s.emoji, s.x*sx, s.y*sy);
+  });
+  const size = parseInt(document.getElementById('imgFontSize').value) * sx;
+  const font = document.getElementById('imgFont').value;
+  const stroke = parseInt(document.getElementById('imgStroke').value);
+  function drawFull(text, yPct) {
+    if(!text.trim())return;
+    octx.font=`900 ${size}px ${font}`;
+    octx.textAlign='center'; octx.textBaseline='middle';
+    const maxW=out.width*0.9; const words=text.split(' '); let line='',lines=[];
+    words.forEach(w=>{const t=line+(line?' ':'')+w; if(octx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;});
+    if(line)lines.push(line);
+    const lh=size*1.2;
+    lines.forEach((l,i)=>{
+      const y=(yPct/100)*out.height+(i-(lines.length-1)/2)*lh;
+      if(stroke>0){octx.strokeStyle='#000';octx.lineWidth=stroke*2*sx;octx.lineJoin='round';octx.strokeText(l.toUpperCase(),out.width/2,y);}
+      octx.fillStyle=imgTextColor; octx.fillText(l.toUpperCase(),out.width/2,y);
+    });
+  }
+  drawFull(document.getElementById('topText').value,8);
+  drawFull(document.getElementById('bottomText').value,92);
+  const a=document.createElement('a'); a.download='memeforge.png'; a.href=out.toDataURL('image/png'); a.click();
+}
+
+document.getElementById('imgFile').addEventListener('change',e=>{if(e.target.files[0])loadImg(e.target.files[0]);});
+document.getElementById('imgCanvasArea').addEventListener('dragover',e=>{e.preventDefault();});
+document.getElementById('imgCanvasArea').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])loadImg(e.dataTransfer.files[0]);});
+
+// ===================== VIDEO =====================
+const vidCanvas = document.getElementById('vidCanvas');
+const vidCtx = vidCanvas.getContext('2d');
+const videoEl = document.getElementById('videoEl');
+let vidTextColor = '#ffffff';
+let vidFilterCSS = 'none';
+let vidStickers = [];
+let selectedVidSticker = null;
+let rafId = null;
+let isPlaying = false;
+
+function setVidFilter(f, el) {
+  vidFilterCSS = f;
+  document.querySelectorAll('#tab-video .preset-btn').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function setVidColor(c, el) {
+  vidTextColor = c;
+  document.querySelectorAll('#tab-video .color-dot').forEach(d=>d.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+vidCanvas.addEventListener('click', function(e) {
+  if(!selectedVidSticker || videoEl.readyState<2) return;
+  const r = vidCanvas.getBoundingClientRect();
+  const sx=(e.clientX-r.left)/r.width*vidCanvas.width;
+  const sy=(e.clientY-r.top)/r.height*vidCanvas.height;
+  vidStickers.push({emoji:selectedVidSticker, x:sx, y:sy, size:60});
+  selectedVidSticker=null;
+});
+
+function clearVidStickers(){vidStickers=[];drawVidFrame();}
+
+function loadVideo(file) {
+  const url = URL.createObjectURL(file);
+  videoEl.src = url;
+  videoEl.onloadedmetadata = () => {
+    const maxW = document.getElementById('vidCanvasArea').clientWidth - 20;
+    const scale = Math.min(1, maxW/videoEl.videoWidth, 500/videoEl.videoHeight);
+    vidCanvas.width = Math.round(videoEl.videoWidth*scale);
+    vidCanvas.height = Math.round(videoEl.videoHeight*scale);
+    document.getElementById('vidDropZone').classList.add('hidden');
+    vidCanvas.classList.remove('hidden');
+    document.getElementById('vidControls').classList.remove('hidden');
+    document.getElementById('vidInfo').textContent = `${videoEl.videoWidth}×${videoEl.videoHeight}`;
+    document.getElementById('gifStart').max = Math.floor(videoEl.duration);
+    videoEl.play();
+    isPlaying = true;
+    document.getElementById('playBtn').textContent = '⏸';
+    startRaf();
+  };
+}
+
+function startRaf() {
+  if(rafId) cancelAnimationFrame(rafId);
+  function loop() {
+    drawVidFrame();
+    updateProgress();
+    rafId = requestAnimationFrame(loop);
+  }
+  rafId = requestAnimationFrame(loop);
+}
+
+function getVidFilter() {
+  const b = document.getElementById('vidBright').value;
+  const c = document.getElementById('vidContrast').value;
+  let f = `brightness(${b}%) contrast(${c}%)`;
+  if(vidFilterCSS !== 'none') f += ' ' + vidFilterCSS;
+  return f;
+}
+
+function drawVidFrame() {
+  if(videoEl.readyState<2) return;
+  vidCtx.filter = getVidFilter();
+  vidCtx.drawImage(videoEl, 0, 0, vidCanvas.width, vidCanvas.height);
+  vidCtx.filter = 'none';
+  drawVidText(vidCtx, vidCanvas.width, vidCanvas.height);
+  vidStickers.forEach(s=>{
+    vidCtx.font=`${s.size}px serif`;
+    vidCtx.textAlign='center'; vidCtx.textBaseline='middle';
+    vidCtx.fillText(s.emoji, s.x, s.y);
+  });
+}
+
+function drawVidText(ctx, w, h) {
+  const top = document.getElementById('vidTopText').value;
+  const bot = document.getElementById('vidBottomText').value;
+  const size = parseInt(document.getElementById('vidFontSize').value);
+  function drawT(text, yPct) {
+    if(!text.trim())return;
+    ctx.font=`900 ${size}px Impact, Arial Black`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const maxW=w*0.9; const words=text.split(' '); let line='',lines=[];
+    words.forEach(word=>{const t=line+(line?' ':'')+word;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=word;}else line=t;});
+    if(line)lines.push(line);
+    const lh=size*1.2;
+    lines.forEach((l,i)=>{
+      const y=(yPct/100)*h+(i-(lines.length-1)/2)*lh;
+      ctx.strokeStyle='#000'; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.strokeText(l.toUpperCase(),w/2,y);
+      ctx.fillStyle=vidTextColor; ctx.fillText(l.toUpperCase(),w/2,y);
+    });
+  }
+  drawT(top,8); drawT(bot,92);
+}
+
+function togglePlay() {
+  if(videoEl.paused){videoEl.play();isPlaying=true;document.getElementById('playBtn').textContent='⏸';startRaf();}
+  else{videoEl.pause();isPlaying=false;document.getElementById('playBtn').textContent='▶';}
+}
+
+function updateProgress() {
+  if(!videoEl.duration)return;
+  document.getElementById('videoProgress').value=(videoEl.currentTime/videoEl.duration)*100;
+  const fmt=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+  document.getElementById('vidTime').textContent=`${fmt(videoEl.currentTime)} / ${fmt(videoEl.duration)}`;
+}
+
+function seekVideo(v) { videoEl.currentTime=(v/100)*videoEl.duration; drawVidFrame(); }
+
+function captureFrame() {
+  if(videoEl.readyState<2)return;
+  videoEl.pause(); isPlaying=false; document.getElementById('playBtn').textContent='▶';
+  drawVidFrame();
+  const a=document.createElement('a'); a.download='memeforge_frame.png'; a.href=vidCanvas.toDataURL('image/png'); a.click();
+}
+
+async function startGifExport() {
+  if(videoEl.readyState<2)return;
+  const start=parseFloat(document.getElementById('gifStart').value);
+  const duration=parseFloat(document.getElementById('gifDuration').value);
+  const quality=parseInt(document.getElementById('gifQuality').value);
+  const fps=10;
+  const totalFrames=Math.floor(duration*fps);
+  document.getElementById('gifProgress').style.display='block';
+  document.getElementById('gifBtn').disabled=true;
+  videoEl.pause(); isPlaying=false; document.getElementById('playBtn').textContent='▶';
+
+  const gif = new GIF({
+    workers:2, quality, width:vidCanvas.width, height:vidCanvas.height,
+    workerScript:'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+  });
+
+  document.getElementById('gifLabel').textContent='Načítavam frames...';
+
+  for(let i=0;i<totalFrames;i++){
+    videoEl.currentTime=start+(i/fps);
+    await new Promise(r=>setTimeout(r,80));
+    drawVidFrame();
+    const tmp=document.createElement('canvas');
+    tmp.width=vidCanvas.width; tmp.height=vidCanvas.height;
+    tmp.getContext('2d').drawImage(vidCanvas,0,0);
+    gif.addFrame(tmp,{delay:1000/fps,copy:true});
+    document.getElementById('gifFill').style.width=((i+1)/totalFrames*70)+'%';
+    document.getElementById('gifLabel').textContent=`Frames: ${i+1}/${totalFrames}`;
+  }
+
+  document.getElementById('gifLabel').textContent='Kompilujem GIF...';
+  gif.on('progress',p=>{ document.getElementById('gifFill').style.width=(70+p*30)+'%'; });
+  gif.on('finished',blob=>{
+    const a=document.createElement('a'); a.download='memeforge.gif'; a.href=URL.createObjectURL(blob); a.click();
+    document.getElementById('gifProgress').style.display='none';
+    document.getElementById('gifFill').style.width='0%';
+    document.getElementById('gifBtn').disabled=false;
+    document.getElementById('gifLabel').textContent='Generujem GIF...';
+  });
+  gif.render();
+}
+
+document.getElementById('vidFile').addEventListener('change',e=>{if(e.target.files[0])loadVideo(e.target.files[0]);});
+document.getElementById('vidCanvasArea').addEventListener('dragover',e=>e.preventDefault());
+document.getElementById('vidCanvasArea').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])loadVideo(e.dataTransfer.files[0]);});
+
+
+// ===================== AI MEME GENERATOR =====================
+let lastAITop = '', lastAIBot = '';
+
+const memeTemplates = {
+  funny: [
+    ['Keď konečne pochopíš zadanie', 'Ale odovzdávanie je o 5 minút'],
+    ['Ja o 8:00 ráno', 'Ja po prvej káve'],
+    ['Keď povieš že máš hotové', 'Ale ešte ani nezačal'],
+    ['Priatelia: poď von', 'Môj projekt: 127 chýb'],
+    ['Keď funguje na prvýkrát', 'Ja: čo som spravil zle?'],
+    ['Stack Overflow', 'Môj mozog pred skúškou'],
+    ['Keď git push ide cez', 'Celý server padol'],
+    ['Ja keď vidím bug o 23:58', 'Odovzdávanie o polnoci'],
+    ['Keď skopíruješ kód z netu', 'A funguje to na prvýkrát'],
+    ['Prezentácia zajtra', 'Ja teraz robím slide 1'],
+    ['Keď ti učiteľ povie well done', 'Ale bolo to copy paste'],
+    ['Môj alarm o 7:00', 'Môj mozog o 7:05'],
+    ['Plán: učiť sa 3 hodiny', 'Realita: YouTube 3 hodiny'],
+    ['Keď je skúška o 8:00', 'A ty si šiel spať o 4:00'],
+    ['Môj kód v utorok', 'Môj kód vo štvrtok'],
+    ['Dokumentácia', 'Nikto ju nečíta'],
+    ['Keď nájdeš bug po 6 hodinách', 'Bol to medzera navyše'],
+    ['Piatok poobede', 'Ja konečne slobodný'],
+    ['Keď robíš skupinový projekt', 'A robíš všetko sám'],
+    ['Môj projekt: 10%', 'Môj stres: 100%'],
+  ],
+  dark: [
+    ['Spánok', 'Termíny odovzdania'],
+    ['Moje sny', 'Moja realita'],
+    ['Keď debuguješ 3 hodiny', 'Chýbala čiarka'],
+    ['Motivácia v pondelok', 'Motivácia v piatok'],
+    ['Keď máš plán na štúdium', 'Netflix existuje'],
+    ['Môj bankový účet', 'Môj apetít'],
+    ['Spánok 8 hodín', 'Kofein a vzdych'],
+    ['Keď si myslíš že máš čas', 'Termín bol včera'],
+    ['Optimizmus', 'Januárové účty'],
+    ['Moje očakávania', 'Moja výplata'],
+    ['Keď si kúpiš potraviny', 'A ješ ich o 3:00 ráno'],
+    ['Práca na dohodu', 'Platená dovolenka: nie'],
+    ['Keď si myslíš že je piatok', 'Je streda'],
+    ['Zdravý životný štýl', 'Fastfood a ľutovanie'],
+    ['Sociálne siete', 'Moje sebavedomie'],
+  ],
+  wholesome: [
+    ['Keď ti kamarát pomôže', 'S každým bugom'],
+    ['Ty po odovzdaní projektu', 'Najšťastnejší človek'],
+    ['Keď konečne pôjde kód', '❤️ Najlepší pocit ever'],
+    ['Tvoji priatelia', 'Vždy tu pre teba'],
+    ['Keď ťa niekto pochváli', 'Celý deň si šťastný'],
+    ['Domáce jedlo', 'Najlepšia terapia'],
+    ['Víkend s rodinou', 'Dobíjanie bateriek'],
+    ['Keď pes príde k tebe', 'Všetko je v poriadku'],
+    ['Úspech po ťažkej práci', 'Stojí za to'],
+    ['Prvá káva rána', 'Malé šťastie'],
+    ['Keď niekto pamätá tvoje narodeninky', 'Srdce plné'],
+    ['Dobrý kamarát', 'Pokladnica bez ceny'],
+    ['Keď dokončíš projekt', 'Si hrdý sám na seba'],
+    ['Slnečný deň po daždi', 'Život je krásny'],
+  ],
+  absurd: [
+    ['Chladnička o 3:00 ráno', 'Filozofia života'],
+    ['Moja mačka', 'Prezident vesmíru'],
+    ['Keď si dáš cereálie bez mlieka', 'Anarchista'],
+    ['Topánky na ľavej nohe', 'Existenciálna kríza'],
+    ['WiFi heslo', 'Prečo sme tu?'],
+    ['Keď hovoríš sám so sebou', 'A sám sebe odpovieš'],
+    ['Ponožky v sandáloch', 'Módny výrok'],
+    ['Keď prehltnete vodu zle', 'Telo: ALARM'],
+    ['Banán ako zbraň', 'Legitímna stratégia'],
+    ['Keď sa pozrieš do zrkadla', 'Zrkadlo sa pozrie späť'],
+    ['Gravitácia', 'Prečo padáme hore?'],
+    ['Keď vidíš oblak v tvare ovce', 'Ovca v tvare oblaku'],
+    ['Číslo 7', 'Tajomné číslo vesmíru'],
+    ['Keď žmurkáš ľavým okom', 'Pravé oko: zrada'],
+    ['Polievka', 'Tekutý chlieb'],
+  ],
+  slovak: [
+    ['Keď ti babka dá 10 eur', 'A povie to si málo'],
+    ['Slovenské leto', 'Tri dni v júli'],
+    ['Bryndzové halušky', 'Slovenská terapia'],
+    ['Keď Slovák vyhrá niečo', 'Celý národ to vedel'],
+    ['Ej vole', 'Slovenský výraz pre všetko'],
+    ['Keď prídeš na Vianoce domov', 'Babka: vychudol si'],
+    ['Slovenský vodič', 'Každý je idiot okrem neho'],
+    ['Keď je výpredaj v Lidli', 'Fronta ako v SSSR'],
+    ['Počasie v marci', 'Všetky štyri ročné obdobia za deň'],
+    ['Keď Slovensko vyhrá hokej', 'Štátny sviatok'],
+    ['Slovenský sused', 'Vie o tebe viac ako Google'],
+    ['Cena benzínu', 'Platíme zlatom'],
+    ['Keď ídeš na chatu', 'Polovica Slovenska tam tiež'],
+    ['Slovenský goodbye', 'Trvá 45 minút pri dverách'],
+    ['Kapustnica', 'Liečivá sila prírody'],
+    ['Keď ti povedia že si šikovný', 'Ale nie na matematiku'],
+    ['Slovenský čas', 'Prídem o 3 = prídem o 4'],
+  ],
+};
+
+// Smart topic-based generator
+function generateFromTopic(topic, mood) {
+  const topicLower = topic.toLowerCase();
+  const topicMap = {
+    škola: [['Keď máš skúšku zajtra', 'A dnes si prvýkrát otvoril knihu'], ['Škola', 'Kde sny idú zomrieť']],
+    práca: [['Pondelok ráno v práci', 'Kde je môj život?'], ['Keď šéf povie extra práca', 'Ale nie extra plat']],
+    jedlo: [['Diéta od pondelka', 'Dnes je nedeľa'], ['Keď si objednáš jedlo', 'A prinesú niečo iné']],
+    láska: [['Ja: som v poriadku', 'Moje srdce: nie'], ['Valentín', 'Komerčný sviatok alebo láska?']],
+    peniaze: [['Môj bankový účet', 'Moje plány na výlet'], ['Keď dostaneš výplatu', 'A hneď ide na účty']],
+    počítač: [['Keď kód konečne funguje', 'O 2:00 ráno'], ['PC: restartujem', 'Problém vyriešený']],
+    auto: [['Slovenský vodič', 'Každý je blbec'], ['Keď ťa predbehnú', 'To je osobný útok']],
+    šport: [['Ja: cvičím od pondelka', 'Pondelok: dnes nie'], ['Keď behám 5 minút', 'A som hotový']],
+  };
+  for (const [key, pairs] of Object.entries(topicMap)) {
+    if (topicLower.includes(key)) {
+      return pairs[Math.floor(Math.random() * pairs.length)];
+    }
+  }
+  // Generic topic injection
+  const templates = memeTemplates[mood] || memeTemplates.funny;
+  const pick = templates[Math.floor(Math.random() * templates.length)];
+  return [`Keď ${topic}`, pick[1]];
+}
+
+async function generateAIMeme() {
+  const topic = document.getElementById('aiTopic').value.trim();
+  const mood = document.getElementById('aiMood').value;
+  const btn = document.getElementById('aiBtn');
+  const loading = document.getElementById('aiLoading');
+  const result = document.getElementById('aiResult');
+
+  btn.disabled = true;
+  loading.style.display = 'block';
+  result.style.display = 'none';
+
+  try {
+    // Try Claude API first
+    const prompt = `Vygeneruj krátky vtipný meme text v ${mood === 'slovak' ? 'slovenčine' : 'slovenčine alebo angličtine'}.
+Štýl: ${mood}.
+${topic ? `Téma: ${topic}.` : ''}
+Vráť IBA JSON: {"top": "horný text memu (max 8 slov)", "bottom": "dolný text memu (max 8 slov)"}
+Bez vysvetlení, len JSON.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const text = data.content[0].text.trim();
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      lastAITop = parsed.top;
+      lastAIBot = parsed.bottom;
+    } else {
+      throw new Error('API unavailable');
+    }
+  } catch(e) {
+    // Fallback: local templates
+    let pair;
+    if (topic) {
+      pair = generateFromTopic(topic, mood);
+    } else {
+      const templates = memeTemplates[mood] || memeTemplates.funny;
+      pair = templates[Math.floor(Math.random() * templates.length)];
+    }
+    lastAITop = pair[0];
+    lastAIBot = pair[1];
+  }
+
+  document.getElementById('aiTopResult').textContent = '↑ ' + lastAITop;
+  document.getElementById('aiBotResult').textContent = '↓ ' + lastAIBot;
+  loading.style.display = 'none';
+  result.style.display = 'block';
+  btn.disabled = false;
+}
+
+function useAIText() {
+  document.getElementById('topText').value = lastAITop;
+  document.getElementById('bottomText').value = lastAIBot;
+  drawImg();
+}
+
+let lastVidAITop = '', lastVidAIBot = '';
+
+async function generateVidAIMeme() {
+  const topic = document.getElementById('vidAiTopic').value.trim();
+  const mood = document.getElementById('vidAiMood').value;
+  const btn = document.getElementById('vidAiBtn');
+  const loading = document.getElementById('vidAiLoading');
+  const result = document.getElementById('vidAiResult');
+  btn.disabled = true;
+  loading.style.display = 'block';
+  result.style.display = 'none';
+  try {
+    const prompt = `Vygeneruj krátky vtipný meme text v slovenčine. Štýl: ${mood}. ${topic ? `Téma: ${topic}.` : ''} Vráť IBA JSON: {"top": "horný text (max 8 slov)", "bottom": "dolný text (max 8 slov)"}`;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 150, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const parsed = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+      lastVidAITop = parsed.top; lastVidAIBot = parsed.bottom;
+    } else throw new Error();
+  } catch(e) {
+    const pair = topic ? generateFromTopic(topic, mood) : (memeTemplates[mood]||memeTemplates.funny)[Math.floor(Math.random()*(memeTemplates[mood]||memeTemplates.funny).length)];
+    lastVidAITop = pair[0]; lastVidAIBot = pair[1];
+  }
+  document.getElementById('vidAiTopResult').textContent = '↑ ' + lastVidAITop;
+  document.getElementById('vidAiBotResult').textContent = '↓ ' + lastVidAIBot;
+  loading.style.display = 'none';
+  result.style.display = 'block';
+  btn.disabled = false;
+}
+
+function useVidAIText() {
+  document.getElementById('vidTopText').value = lastVidAITop;
+  document.getElementById('vidBottomText').value = lastVidAIBot;
+  drawVidFrame();
 }
 </script>
 </body>

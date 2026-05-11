@@ -1,33 +1,55 @@
 # MemeForge 🎭
 
-Webová aplikácia na tvorbu memov — jednoduchá, rýchla, bez inštalácie.
+Webová aplikácia na tvorbu memov z obrázkov aj videí — priamo v prehliadači, bez inštalácie.
 
 ## O projekte
 
-MemeForge je klientská webová aplikácia vytvorená ako súčasť predmetu **B-MSAP**. Umožňuje používateľom vytvárať memy priamo v prehliadači bez potreby akéhokoľvek backendu alebo inštalácie.
+MemeForge je klientská webová aplikácia vytvorená ako súčasť predmetu **B-MSAP**. Umožňuje používateľom vytvárať memy z obrázkov aj videí, aplikovať filtre a efekty, pridávať nálepky a generovať vtipné texty pomocou AI.
 
 ## Funkcie
 
-- **Nahrávanie obrázkov** — Drag & Drop alebo klasický výber súboru
-- **Horný a dolný text** — klasický meme formát s live náhľadom
-- **Nastavenie textu** — veľkosť, farba, pozícia, font, hrúbka obrysu
-- **6 predpripravených šablón** — Drake, Distracted BF, Two Buttons a ďalšie
-- **Export** — stiahnutie hotového memu v plnom rozlíšení ako PNG
+### 🖼 Obrázok
+- **Nahrávanie** — Drag & Drop alebo výber súboru (JPG, PNG, WebP)
+- **Text** — horný a dolný text s nastavením veľkosti, farby, fontu a obrysu
+- **9 filtrov** — Normal, B&W, Warm, Cold, Vintage, Invert, Faded, Dramatic, Sunset
+- **Pixelizácia** — 8-bit retro efekt exportovateľný do PNG
+- **Vignette** — tmavé rohy pre dramatický vzhľad
+- **Nálepky** — 20 emoji nálepiek kliknutím na obrázok
+- **Rotácia a flip** horizontálne
+- **Export** — stiahnutie v plnom rozlíšení ako PNG
+
+### 🎬 Video / GIF
+- **Nahrávanie videa** — Drag & Drop (MP4, WebM, MOV)
+- **Text na video** — horný a dolný text s live náhľadom
+- **6 video filtrov** — Normal, B&W, Sepia, Invert, Hue, Vivid
+- **Jas a kontrast** — real-time úprava
+- **Nálepky na video**
+- **Zachytenie frame** — export aktuálneho snímku ako PNG
+- **GIF export** — nastaviteľný začiatok, dĺžka a kvalita
+
+### 🤖 AI Meme Generátor (obraz aj video)
+- Generovanie vtipných textov podľa témy a nálady
+- 5 nálad: Vtipný, Dark humor, Wholesome, Absurdný, Slovenský
+- 80+ lokálnych šablón — funguje bez internetu aj bez API
+- Jedným klikom vloží text do editora
 
 ## Použité technológie
 
 - HTML5 / CSS3 / JavaScript
-- Canvas API (kreslenie a export obrázkov)
+- Canvas API (kreslenie, filtre, pixelizácia, vignette, export)
 - FileReader API (načítanie súborov)
-- Čisto klient-side — žiadny backend, žiadny server
+- Web Video API (prehrávanie a spracovanie videa)
+- gif.js (GIF export klient-side)
+- Čisto frontend — žiadny backend, žiadny server
 
 ## Ako používať
 
-1. Otvor `index.html` v prehliadači
-2. Nahraj vlastný obrázok alebo vyber šablónu
-3. Napíš horný a dolný text
-4. Uprav veľkosť, farbu a štýl podľa seba
-5. Klikni **Stiahnuť meme** — hotovo!
+1. Otvor aplikáciu v prehliadači
+2. Vyber záložku **Obrázok** alebo **Video / GIF**
+3. Nahraj súbor alebo ho pretiahni do okna
+4. Uprav filtre, pridaj text alebo nálepky
+5. Použi **AI Generátor** na automatický vtipný text
+6. Klikni **Stiahnuť PNG** alebo **Exportovať GIF**
 
 ## Štruktúra projektu
 
